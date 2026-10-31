@@ -1,9 +1,15 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { api } from "../lib/api";
 import { FormEvent, useState } from "react";
 
 export default function LoginPage() {
+  const router = useRouter();
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState("");
+  const [remember, setRemember] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState<{
@@ -11,8 +17,10 @@ export default function LoginPage() {
     password?: string;
   }>({});
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (busy) return;
+    setMessage("");
 
     const newErrors: {
       email?: string;
@@ -27,19 +35,27 @@ export default function LoginPage() {
 
     if (!password) {
       newErrors.password = "Vui lòng nhập mật khẩu.";
-    } else if (password.length < 6) {
-      newErrors.password = "Mật khẩu phải có ít nhất 6 ký tự.";
+    } else if (password.length < 8) {
+      newErrors.password = "Mật khẩu phải có ít nhất 8 ký tự.";
     }
 
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length === 0) {
-      alert("Đăng nhập hợp lệ. Backend sẽ được tích hợp sau.");
+      setBusy(true);
+      try {
+        await api("/auth/login", { method: "POST", body: JSON.stringify({ email: email.trim(), password, remember }) });
+        router.replace("/dashboard");
+      } catch (error) {
+        setMessage(error instanceof Error ? error.message : "Có lỗi xảy ra.");
+      } finally {
+        setBusy(false);
+      }
     }
   };
 
   return (
-    <main className="min-h-screen bg-slate-100 px-4 py-10 flex items-center justify-center">
+    <main className="min-h-screen bg-slate-100 px-4 py-10 flex items-center justify-center text-slate-900">
       <div className="w-full max-w-5xl overflow-hidden rounded-3xl bg-white shadow-2xl grid md:grid-cols-2">
         <section className="hidden md:flex flex-col justify-between bg-slate-900 p-12 text-white">
           <div>
@@ -85,6 +101,7 @@ export default function LoginPage() {
           </p>
 
           <form onSubmit={handleSubmit} className="mt-8 space-y-5">
+            {message && <p role="alert" className="text-sm text-red-600">{message}</p>}
             <div>
               <label
                 htmlFor="email"
@@ -149,6 +166,8 @@ export default function LoginPage() {
               <label className="flex items-center gap-2 text-slate-600">
                 <input
                   type="checkbox"
+                  checked={remember}
+                  onChange={(e) => setRemember(e.target.checked)}
                   className="h-4 w-4"
                 />
                 Ghi nhớ đăng nhập
@@ -156,6 +175,7 @@ export default function LoginPage() {
 
               <button
                 type="button"
+                onClick={() => setMessage("Vui lòng liên hệ quản trị viên để được hỗ trợ khôi phục tài khoản.")}
                 className="font-medium text-cyan-600 hover:text-cyan-700"
               >
                 Quên mật khẩu?
@@ -164,6 +184,8 @@ export default function LoginPage() {
 
             <button
               type="submit"
+              disabled={busy}
+              aria-busy={busy}
               className="w-full rounded-xl bg-slate-900 py-3 font-semibold text-white transition hover:bg-slate-800"
             >
               Đăng nhập

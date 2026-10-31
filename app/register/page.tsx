@@ -1,9 +1,14 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { api } from "../lib/api";
 import { FormEvent, useState } from "react";
 
 export default function RegisterPage() {
+  const router = useRouter();
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState("");
   const [form, setForm] = useState({
     fullName: "",
     email: "",
@@ -13,8 +18,10 @@ export default function RegisterPage() {
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (busy) return;
+    setMessage("");
 
     const newErrors: Record<string, string> = {};
 
@@ -32,8 +39,8 @@ export default function RegisterPage() {
 
     if (!form.password) {
       newErrors.password = "Vui lòng nhập mật khẩu.";
-    } else if (form.password.length < 6) {
-      newErrors.password = "Mật khẩu phải có ít nhất 6 ký tự.";
+    } else if (form.password.length < 8) {
+      newErrors.password = "Mật khẩu phải có ít nhất 8 ký tự.";
     }
 
     if (!form.confirmPassword) {
@@ -45,7 +52,15 @@ export default function RegisterPage() {
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length === 0) {
-      alert("Đăng ký hợp lệ. Backend sẽ được tích hợp sau.");
+      setBusy(true);
+      try {
+        await api("/auth/register", { method: "POST", body: JSON.stringify({ email: form.email.trim(), full_name: form.fullName.trim(), password: form.password }) });
+        router.replace("/login?registered=1");
+      } catch (error) {
+        setMessage(error instanceof Error ? error.message : "Có lỗi xảy ra.");
+      } finally {
+        setBusy(false);
+      }
     }
   };
 
@@ -62,7 +77,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <main className="min-h-screen bg-slate-100 px-4 py-10 flex items-center justify-center">
+    <main className="min-h-screen bg-slate-100 px-4 py-10 flex items-center justify-center text-slate-900">
       <div className="w-full max-w-5xl overflow-hidden rounded-3xl bg-white shadow-2xl grid md:grid-cols-2">
         <section className="hidden md:flex flex-col justify-between bg-slate-900 p-12 text-white">
           <div>
@@ -108,6 +123,7 @@ export default function RegisterPage() {
           </p>
 
           <form onSubmit={handleSubmit} className="mt-8 space-y-5">
+            {message && <p role="alert" className="text-sm text-red-600">{message}</p>}
             <div>
               <label
                 htmlFor="fullName"
@@ -175,7 +191,7 @@ export default function RegisterPage() {
                 onChange={(e) =>
                   updateField("password", e.target.value)
                 }
-                placeholder="Tối thiểu 6 ký tự"
+                placeholder="Tối thiểu 8 ký tự"
                 className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-cyan-500 focus:ring-2 focus:ring-cyan-100"
               />
 
@@ -226,6 +242,8 @@ export default function RegisterPage() {
 
             <button
               type="submit"
+              disabled={busy}
+              aria-busy={busy}
               className="w-full rounded-xl bg-slate-900 py-3 font-semibold text-white transition hover:bg-slate-800"
             >
               Tạo tài khoản
