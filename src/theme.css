@@ -1,0 +1,40 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ===== THE theme. Every colour in the app comes from these tokens (RGB triplets so Tailwind can add opacity). ===== */
+:root {
+  --bg: 246 247 249;  --surface: 255 255 255;  --surface-2: 240 243 246;  --border: 222 227 233;
+  --text: 20 29 40;   --muted: 98 110 124;
+  --primary: 13 115 119;  --primary-fg: 255 255 255;  --accent: 196 134 12;
+  --success: 21 128 61;   --warning: 180 83 9;  --danger: 185 28 28;  --info: 29 78 216;
+  --radius: 14px;
+  --shadow-card: 0 1px 2px rgb(15 23 42 / 0.06), 0 1px 3px rgb(15 23 42 / 0.05);
+  --shadow-pop: 0 12px 32px rgb(15 23 42 / 0.18);
+  color-scheme: light;
+}
+[data-theme='dark'] {
+  --bg: 11 16 22;  --surface: 19 26 35;  --surface-2: 27 36 47;  --border: 44 55 69;
+  --text: 232 237 243;  --muted: 142 155 170;
+  --primary: 45 190 175;  --primary-fg: 5 25 24;  --accent: 234 179 8;
+  --success: 74 222 128;  --warning: 251 191 36;  --danger: 248 113 113;  --info: 96 165 250;
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.4);
+  --shadow-pop: 0 12px 32px rgb(0 0 0 / 0.55);
+  color-scheme: dark;
+}
+
+@layer base {
+  html { @apply bg-page text-fg antialiased; }
+  body { @apply min-h-screen font-sans text-sm; }
+  *:focus-visible { @apply outline-none ring-2 ring-primary/60 ring-offset-2 ring-offset-page; }
+  ::selection { @apply bg-primary/25; }
+  h1, h2, h3 { @apply font-semibold tracking-tight; }
+}
+@layer components {
+  .input { @apply w-full rounded-lg border border-line bg-surface px-3 py-2 text-fg placeholder:text-muted/70 transition focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30 disabled:cursor-not-allowed disabled:opacity-60; }
+  .input[aria-invalid='true'] { @apply border-danger focus:ring-danger/30; }
+  .card { @apply rounded-xl border border-line bg-surface shadow-card; }
+  .link { @apply font-medium text-primary hover:underline; }
+  .th { @apply px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wide text-muted; }
+  .td { @apply px-4 py-3 align-middle; }
+}
