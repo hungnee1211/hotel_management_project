@@ -4,6 +4,7 @@
 
 /* ===== THE theme. Every colour in the app comes from these tokens (RGB triplets so Tailwind can add opacity). ===== */
 :root {
+  /* background: --bg là màu nền của trang (chế độ sáng) */
   --bg: 246 247 249;  --surface: 255 255 255;  --surface-2: 240 243 246;  --border: 222 227 233;
   --text: 20 29 40;   --muted: 98 110 124;
   --primary: 13 115 119;  --primary-fg: 255 255 255;  --accent: 196 134 12;
@@ -14,6 +15,7 @@
   color-scheme: light;
 }
 [data-theme='dark'] {
+  /* background: --bg là màu nền của trang (chế độ tối) */
   --bg: 11 16 22;  --surface: 19 26 35;  --surface-2: 27 36 47;  --border: 44 55 69;
   --text: 232 237 243;  --muted: 142 155 170;
   --primary: 45 190 175;  --primary-fg: 5 25 24;  --accent: 234 179 8;
@@ -24,6 +26,7 @@
 }
 
 @layer base {
+  /* background: tô màu nền --bg (bg-page) cho toàn trang */
   html { @apply bg-page text-fg antialiased; }
   body { @apply min-h-screen font-sans text-sm; }
   *:focus-visible { @apply outline-none ring-2 ring-primary/60 ring-offset-2 ring-offset-page; }
